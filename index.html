@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belén Rodríguez — Video Editor</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #f5f0e8;
+            --cream: #ede7d9;
+            --pink: #ff3c78;
+            --yellow: #ffe14d;
+            --blue: #3d5afe;
+            --green: #00e676;
+            --purple: #d500f9;
+            --border: 3px solid var(--black);
+            --border-thick: 5px solid var(--black);
+            --shadow: 6px 6px 0px var(--black);
+            --shadow-sm: 4px 4px 0px var(--black);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: var(--cream);
+            color: var(--black);
+            overflow-x: hidden;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        /* ===== DOTS BACKGROUND ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle, var(--black) 1.2px, transparent 1.2px);
+            background-size: 28px 28px;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== BUTTERFLIES ===== */
+        .butterfly {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            animation: flutter 8s ease-in-out infinite;
+            opacity: 0.6;
+        }
+
+        .butterfly:nth-child(1) {
+            top: 8%;
+            left: 5%;
+            animation-delay: 0s;
+            width: 44px;
+        }
+
+        .butterfly:nth-child(2) {
+            top: 22%;
+            right: 8%;
+            animation-delay: -2s;
+            width: 32px;
+        }
+
+        .butterfly:nth-child(3) {
+            top: 45%;
+            left: 3%;
+            animation-delay: -4s;
+            width: 40px;
+        }
+
+        .butterfly:nth-child(4) {
+            top: 60%;
+            right: 4%;
+            animation-delay: -1s;
+            width: 36px;
+        }
+
+        .butterfly:nth-child(5) {
+            top: 75%;
+            left: 10%;
+            animation-delay: -3s;
+            width: 48px;
+        }
+
+        .butterfly:nth-child(6) {
+            top: 88%;
+            right: 12%;
+            animation-delay: -5s;
+            width: 28px;
+        }
+
+        .butterfly:nth-child(7) {
+            top: 35%;
+            right: 15%;
+            animation-delay: -6s;
+            width: 26px;
+        }
+
+        .butterfly:nth-child(8) {
+            top: 52%;
+            left: 15%;
+            animation-delay: -7s;
+            width: 42px;
+        }
+
+        @keyframes flutter {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-5deg) scale(1);
+            }
+
+            25% {
+                transform: translateY(-18px) rotate(8deg) scale(1.05);
+            }
+
+            50% {
+                transform: translateY(-8px) rotate(-3deg) scale(0.95);
+            }
+
+            75% {
+                transform: translateY(-22px) rotate(6deg) scale(1.02);
+            }
+        }
+
+        /* ===== NAVIGATION ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--yellow);
+            border-bottom: var(--border-thick);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: none;
+            gap: 0;
+        }
+
+        .nav-links a {
+            color: var(--black);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border: 2px solid var(--black);
+            background: var(--white);
+            transition: all 0.15s;
+        }
+
+        .nav-links a:hover {
+            background: var(--pink);
+            color: var(--white);
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .menu-btn {
+            background: var(--black);
+            color: var(--yellow);
+            border: none;
+            padding: 8px 14px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 52px;
+            left: 0;
+            right: 0;
+            background: var(--black);
+            z-index: 999;
+            flex-direction: column;
+            border-bottom: 4px solid var(--pink);
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            color: var(--yellow);
+            text-decoration: none;
+            padding: 16px 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            transition: background 0.2s;
+        }
+
+        .mobile-menu a:hover {
+            background: var(--pink);
+            color: var(--white);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 56px 16px 40px;
+        }
+
+        .hero-marquee {
+            overflow: hidden;
+            border-top: var(--border-thick);
+            border-bottom: var(--border-thick);
+            background: var(--black);
+            color: var(--yellow);
+            padding: 10px 0;
+            margin-bottom: 32px;
+        }
+
+        .marquee-track {
+            display: flex;
+            animation: scroll-left 20s linear infinite;
+            white-space: nowrap;
+            width: max-content;
+        }
+
+        .marquee-track span {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 0 32px;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: var(--pink);
+            color: var(--white);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 6px 14px;
+            border: var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        .hero h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: clamp(2.8rem, 10vw, 7rem);
+            line-height: 0.95;
+            text-transform: uppercase;
+            letter-spacing: -3px;
+            margin-bottom: 24px;
+            animation: fadeSlideUp 0.8s ease-out;
+        }
+
+        .hero h1 .outline {
+            -webkit-text-stroke: 3px var(--black);
+            color: transparent;
+        }
+
+        .hero h1 .highlight {
+            color: var(--pink);
+            position: relative;
+        }
+
+        .hero-desc {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            max-width: 500px;
+            margin-bottom: 32px;
+            animation: fadeSlideUp 1s ease-out;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            animation: fadeSlideUp 1.2s ease-out;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: var(--border-thick);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px var(--black);
+        }
+
+        .btn-primary {
+            background: var(--pink);
+            color: var(--white);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .btn-dark {
+            background: var(--black);
+            color: var(--yellow);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== SECTIONS ===== */
+        section {
+            position: relative;
+            z-index: 2;
+            padding: 60px 16px;
+        }
+
+        .section-header {
+            margin-bottom: 40px;
+        }
+
+        .section-label {
+            display: inline-block;
+            background: var(--black);
+            color: var(--yellow);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            padding: 6px 16px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 1;
+        }
+
+        /* ===== SKILLS ===== */
+        #skills {
+            background: var(--black);
+            color: var(--white);
+            border-top: var(--border-thick);
+            border-bottom: var(--border-thick);
+        }
+
+        #skills .section-label {
+            background: var(--pink);
+            color: var(--white);
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .skill-card {
+            background: var(--white);
+            color: var(--black);
+            border: var(--border-thick);
+            padding: 24px 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .skill-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 8px 8px 0px var(--pink);
+        }
+
+        .skill-icon {
+            font-size: 2.4rem;
+            margin-bottom: 14px;
+            display: block;
+            height: 42px;
+        }
+
+        .skill-name {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .skill-desc {
+            font-size: 0.75rem;
+            line-height: 1.6;
+            opacity: 0.7;
+        }
+
+        .skill-level {
+            margin-top: 14px;
+            height: 8px;
+            background: var(--cream);
+            border: 2px solid var(--black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-level-fill {
+            height: 100%;
+            background: var(--pink);
+            transition: width 1.5s ease-out;
+        }
+
+        .skill-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--yellow);
+            color: var(--black);
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border: 2px solid var(--black);
+            text-transform: uppercase;
+        }
+
+        /* ===== REELS ===== */
+        .reels-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .reel-card {
+            background: var(--white);
+            border: var(--border-thick);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .reel-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 10px 10px 0px var(--black);
+        }
+
+        .reel-preview {
+            aspect-ratio: 9/16;
+            background: var(--black);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reel-preview .play-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--pink);
+            border: 3px solid var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .reel-preview:hover .play-icon {
+            transform: scale(1.15);
+            background: var(--yellow);
+        }
+
+        .play-icon::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 12px 0 12px 22px;
+            border-color: transparent transparent transparent var(--white);
+            margin-left: 4px;
+        }
+
+        .reel-gradient {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .reel-card:nth-child(1) .reel-gradient {
+            background: linear-gradient(135deg, #ff3c7844, #d500f944, #3d5afe44);
+        }
+
+        .reel-card:nth-child(2) .reel-gradient {
+            background: linear-gradient(135deg, #ffe14d44, #ff3c7844, #00e67644);
+        }
+
+        .reel-card:nth-child(3) .reel-gradient {
+            background: linear-gradient(135deg, #3d5afe44, #00e67644, #ffe14d44);
+        }
+
+        .reel-card:nth-child(4) .reel-gradient {
+            background: linear-gradient(135deg, #d500f944, #ffe14d44, #ff3c7844);
+        }
+
+        .reel-card:nth-child(5) .reel-gradient {
+            background: linear-gradient(135deg, #00e67644, #3d5afe44, #d500f944);
+        }
+
+        .reel-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 16px 16px;
+            z-index: 2;
+        }
+
+        .reel-number {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            line-height: 1;
+        }
+
+        .reel-info {
+            padding: 16px;
+        }
+
+        .reel-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .reel-meta {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-bottom: 12px;
+        }
+
+        .reel-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .reel-link {
+            padding: 8px 14px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 2px solid var(--black);
+            color: var(--black);
+            transition: all 0.15s;
+        }
+
+        .reel-link:hover {
+            background: var(--black);
+            color: var(--yellow);
+        }
+
+        .reel-link.tiktok {
+            background: var(--yellow);
+        }
+
+        .reel-link.instagram {
+            background: var(--pink);
+            color: var(--white);
+        }
+
+        /* ===== ABOUT ===== */
+        #about {
+            background: var(--yellow);
+            border-top: var(--border-thick);
+            border-bottom: var(--border-thick);
+        }
+
+        .about-content {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .about-text p {
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: var(--white);
+            border: var(--border-thick);
+            box-shadow: var(--shadow-sm);
+            padding: 20px 16px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 2rem;
+            color: var(--pink);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 6px;
+            font-weight: 700;
+        }
+
+        /* ===== CONTACT ===== */
+        #contact {
+            background: var(--black);
+            color: var(--white);
+            text-align: center;
+            border-top: var(--border-thick);
+        }
+
+        #contact .section-label {
+            background: var(--pink);
+        }
+
+        .contact-cta {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            letter-spacing: -1px;
+        }
+
+        .contact-cta .accent {
+            color: var(--yellow);
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .social-link {
+            padding: 16px 28px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 3px solid var(--white);
+            color: var(--white);
+            transition: all 0.15s;
+        }
+
+        .social-link:hover {
+            background: var(--pink);
+            border-color: var(--pink);
+            transform: translate(-3px, -3px);
+            box-shadow: 6px 6px 0px var(--pink);
+        }
+
+        .footer-text {
+            font-size: 0.7rem;
+            opacity: 0.4;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* ===== FLOATING ELEMENTS ===== */
+        .float-sticker {
+            position: fixed;
+            z-index: 3;
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 8px 14px;
+            pointer-events: none;
+            border: 2px solid var(--black);
+            animation: floatBounce 6s ease-in-out infinite;
+        }
+
+        .sticker-1 {
+            bottom: 20%;
+            right: 4%;
+            background: var(--green);
+            transform: rotate(8deg);
+            animation-delay: -2s;
+        }
+
+        .sticker-2 {
+            bottom: 40%;
+            left: 2%;
+            background: var(--purple);
+            color: var(--white);
+            transform: rotate(-5deg);
+            animation-delay: -4s;
+        }
+
+        @keyframes floatBounce {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(var(--r, 8deg));
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(var(--r, 8deg));
+            }
+        }
+
+        /* ===== SCROLL REVEAL ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (min-width: 540px) {
+            .reels-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .skills-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            nav {
+                padding: 14px 32px;
+            }
+
+            .nav-links {
+                display: flex;
+            }
+
+            .menu-btn {
+                display: none;
+            }
+
+            section {
+                padding: 80px 40px;
+            }
+
+            .hero {
+                padding: 64px 40px 60px;
+            }
+
+            .skills-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .reels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .about-content {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .about-text {
+                flex: 2;
+            }
+
+            .about-stats {
+                flex: 1;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            section {
+                padding: 100px 80px;
+            }
+
+            .hero {
+                padding: 72px 80px 80px;
+            }
+
+            .skills-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .reels-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .reel-preview {
+                aspect-ratio: 9/16;
+            }
+        }
+
+        /* ===== CURSOR TRAIL ===== */
+        /* ===== LANGUAGE TOGGLE ===== */
+        .lang-btn {
+            background: none;
+            border: 2px solid var(--black);
+            padding: 8px 12px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            background: var(--white);
+            box-shadow: 2px 2px 0px var(--black);
+        }
+
+        .lang-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px var(--black);
+            background: var(--yellow);
+        }
+
+        .lang-btn:active {
+            transform: translate(0, 0);
+            box-shadow: 0px 0px 0px var(--black);
+        }
+
+        .lang-flag {
+            width: 24px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--black);
+        }
+
+        .lang-flag svg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .mobile-lang-btn {
+            margin-left: 0 !important;
+            display: flex;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-lang-btn {
+                display: none;
+            }
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--pink);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Butterflies -->
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#ff3c78" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#d500f9" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#ffe14d" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#00e676" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#ffe14d" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#ff3c78" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#3d5afe" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#d500f9" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#00e676" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#ffe14d" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#ff3c78" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#3d5afe" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#d500f9" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#00e676" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#ffe14d" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#ff3c78" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#3d5afe" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#ff3c78" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#d500f9" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#00e676" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#ffe14d" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#3d5afe" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#00e676" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#d500f9" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#ff3c78" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#ffe14d" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#d500f9" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#00e676" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <svg class="butterfly" width="36" height="28" viewBox="0 0 36 28">
+        <ellipse cx="10" cy="10" rx="9" ry="9" fill="#00e676" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="26" cy="10" rx="9" ry="9" fill="#d500f9" opacity="0.8" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="12" cy="20" rx="6" ry="7" fill="#ff3c78" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <ellipse cx="24" cy="20" rx="6" ry="7" fill="#ffe14d" opacity="0.7" stroke="#0a0a0a" stroke-width="1.5" />
+        <line x1="18" y1="4" x2="18" y2="27" stroke="#0a0a0a" stroke-width="2" />
+        <circle cx="15" cy="8" r="1.5" fill="#0a0a0a" />
+        <circle cx="21" cy="8" r="1.5" fill="#0a0a0a" />
+    </svg>
+
+    <!-- Floating Stickers -->
+    <div class="float-sticker sticker-1" style="--r: 8deg;">✦ Creative</div>
+    <div class="float-sticker sticker-2" style="--r: -5deg;">✦ Video Magic</div>
+
+    <!-- Cursor dot -->
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">BR.</div>
+        <div class="nav-links">
+            <a href="#reels">Reels</a>
+            <a href="#skills">Skills</a>
+            <a href="#about" data-i18n="nav_about">Sobre Mí</a>
+            <a href="#contact" data-i18n="nav_contact">Contacto</a>
+            <button class="lang-btn" onclick="toggleLanguage()">
+                <span class="lang-flag" id="langFlag">
+                    <!-- Default US Flag SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+                        <path fill="#bd3d44" d="M0 0h640v480H0z" />
+                        <path stroke="#fff" stroke-width="37"
+                            d="M0 55h640M0 129h640M0 203h640M0 277h640M0 351h640M0 425h640" />
+                        <path fill="#192f5d" d="M0 0h320v259H0z" />
+                        <marker id="us-a" markerHeight="30" markerWidth="30">
+                            <path fill="#fff" d="m15 0 9 30-24-18h30L6 30z" />
+                        </marker>
+                        <use href="#us-a" x="32" y="32" />
+                    </svg>
+                </span>
+                <span id="langText">EN</span>
+            </button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="lang-btn mobile-lang-btn" onclick="toggleLanguage()">
+                <span class="lang-flag" id="mobileLangFlag">
+                    <!-- Default US Flag SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+                        <path fill="#bd3d44" d="M0 0h640v480H0z" />
+                        <path stroke="#fff" stroke-width="37"
+                            d="M0 55h640M0 129h640M0 203h640M0 277h640M0 351h640M0 425h640" />
+                        <path fill="#192f5d" d="M0 0h320v259H0z" />
+                        <marker id="us-a" markerHeight="30" markerWidth="30">
+                            <path fill="#fff" d="m15 0 9 30-24-18h30L6 30z" />
+                        </marker>
+                        <use href="#us-a" x="32" y="32" />
+                    </svg>
+                </span>
+                <span id="mobileLangText">EN</span>
+            </button>
+            <button class="menu-btn" onclick="toggleMenu()">☰ Menú</button>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#reels" onclick="toggleMenu()">Reels</a>
+        <a href="#skills" onclick="toggleMenu()">Skills</a>
+        <a href="#about" onclick="toggleMenu()" data-i18n="nav_about">Sobre Mí</a>
+        <a href="#contact" onclick="toggleMenu()" data-i18n="nav_contact">Contacto</a>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-marquee">
+            <div class="marquee-track">
+                <span>✦ Video Editor ✦ Content Creator ✦ Motion Designer ✦ Reels Specialist ✦ Visual Storyteller
+                    ✦</span>
+                <span>✦ Video Editor ✦ Content Creator ✦ Motion Designer ✦ Reels Specialist ✦ Visual Storyteller
+                    ✦</span>
+                <span>✦ Video Editor ✦ Content Creator ✦ Motion Designer ✦ Reels Specialist ✦ Visual Storyteller
+                    ✦</span>
+            </div>
+        </div>
+
+        <div class="hero-content">
+            <span class="hero-tag">🦋 Portfolio 2026</span>
+            <h1>
+                <span class="outline">Belén</span><br>
+                <span class="highlight">Rodríguez</span>
+            </h1>
+            <p class="hero-desc" data-i18n="hero_desc">
+                Editora de video especializada en reels, contenido viral y motion graphics.
+                Transformo ideas en piezas visuales que capturan la atención y generan impacto. ✦
+            </p>
+            <div class="hero-buttons">
+                <a href="#reels" class="btn btn-primary" data-i18n="btn_reels">→ Ver Reels</a>
+                <a href="#contact" class="btn btn-secondary" data-i18n="btn_contact">Contacto</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills">
+        <div class="section-header reveal">
+            <span class="section-label" data-i18n="section_tools">Herramientas</span>
+            <h2 class="section-title" style="color: var(--white);">Skills &<br>Tools 🦋</h2>
+        </div>
+
+        <div class="skills-grid">
+            <div class="skill-card reveal">
+                <span class="skill-tag" data-i18n="level_advanced">Avanzado</span>
+                <span class="skill-icon"><svg role="img" viewBox="0 0 24 24" width="42" height="42"
+                        xmlns="http://www.w3.org/2000/svg" fill="#00C4CC">
+                        <path
+                            d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zM6.962 7.68c.754 0 1.337.549 1.405 1.2.069.583-.171 1.097-.822 1.406-.343.171-.48.172-.549.069-.034-.069 0-.137.069-.206.617-.514.617-.926.548-1.508-.034-.378-.308-.618-.583-.618-1.2 0-2.914 2.674-2.674 4.629.103.754.549 1.646 1.509 1.646.308 0 .65-.103.96-.24.5-.264.799-.47 1.097-.8-.073-.885.704-2.046 1.851-2.046.515 0 .926.205.96.583.068.514-.377.582-.514.582s-.378-.034-.378-.17c-.034-.138.309-.07.275-.378-.035-.206-.24-.274-.446-.274-.72 0-1.131.994-1.029 1.611.035.275.172.549.447.549.205 0 .514-.31.617-.755.068-.308.343-.514.583-.514.103 0 .17.034.205.171v.138c-.034.137-.137.548-.102.651 0 .069.034.171.17.171.092 0 .436-.18.777-.459.117-.59.253-1.298.253-1.357.034-.24.137-.48.617-.48.103 0 .171.034.205.171v.138l-.136.617c.445-.583 1.097-.994 1.508-.994.172 0 .309.102.309.274 0 .103 0 .274-.069.446-.137.377-.309.96-.412 1.474 0 .137.035.274.207.274.171 0 .685-.206 1.096-.754l.007-.004c-.002-.068-.007-.134-.007-.202 0-.411.035-.754.104-.994.068-.274.411-.514.617-.514.103 0 .205.069.205.171 0 .035 0 .103-.034.137-.137.446-.24.857-.24 1.269 0 .24.034.582.102.788 0 .034.035.069.07.069.068 0 .548-.445.89-1.028-.308-.206-.48-.549-.48-.96 0-.72.446-1.097.858-1.097.343 0 .617.24.617.72 0 .308-.103.65-.274.96h.102a.77.77 0 0 0 .584-.24.293.293 0 0 1 .134-.117c.335-.425.83-.74 1.41-.74.48 0 .924.205.959.582.068.515-.378.618-.515.618l-.002-.002c-.138 0-.377-.035-.377-.172 0-.137.309-.068.274-.376-.034-.206-.24-.275-.446-.275-.686 0-1.13.891-1.028 1.611.034.275.171.583.445.583.206 0 .515-.308.652-.754.068-.274.343-.514.583-.514.103 0 .17.034.205.171 0 .069 0 .206-.137.652-.17.308-.171.48-.137.617.034.274.171.48.309.583.034.034.068.102.068.102 0 .069-.034.138-.137.138-.034 0-.068 0-.103-.035-.514-.205-.72-.548-.789-.891-.205.24-.445.377-.72.377-.445 0-.89-.411-.96-.926a1.609 1.609 0 0 1 .075-.649c-.203.13-.422.203-.623.203h-.17c-.447.652-.927 1.098-1.27 1.303a.896.896 0 0 1-.377.104c-.068 0-.171-.035-.205-.104-.095-.152-.156-.392-.193-.667-.481.527-1.145.805-1.453.805-.343 0-.548-.206-.582-.55v-.376c.102-.754.377-1.2.377-1.337a.074.074 0 0 0-.069-.07c-.24 0-1.028.824-1.166 1.373l-.103.445c-.068.309-.377.515-.582.515-.103 0-.172-.035-.206-.172v-.137l.046-.233c-.435.31-.87.508-1.075.508-.308 0-.48-.172-.514-.412-.206.274-.445.412-.754.412-.352 0-.696-.24-.862-.593-.244.275-.523.553-.852.764-.48.309-1.028.549-1.68.549-.582 0-1.097-.309-1.371-.583-.412-.377-.651-.96-.686-1.509-.205-1.68.823-3.84 2.4-4.8.378-.205.755-.343 1.132-.343zm9.77 3.291c-.104 0-.172.172-.172.343 0 .274.137.583.309.755a1.74 1.74 0 0 0 .102-.583c0-.343-.137-.515-.24-.515z" />
+                    </svg></span>
+                <div class="skill-name">Canva</div>
+                <p class="skill-desc" data-i18n="desc_canva">Diseño de thumbnails, stories, y plantillas para redes
+                    sociales con branding
+                    consistente.</p>
+                <div class="skill-level">
+                    <div class="skill-level-fill" style="width: 90%;"></div>
+                </div>
+            </div>
+
+            <div class="skill-card reveal">
+                <span class="skill-tag" data-i18n="level_advanced">Avanzado</span>
+                <span class="skill-icon">
+                    <img src="canvalogoBlackBackground.png" alt="CapCut"
+                        style="width: 42px; height: 42px; object-fit: contain; border-radius: 50%;">
+                </span>
+                <div class="skill-name">CapCut</div>
+                <p class="skill-desc" data-i18n="desc_capcut">Edición avanzada de reels y TikToks con transiciones,
+                    efectos y sincronización
+                    musical.</p>
+                <div class="skill-level">
+                    <div class="skill-level-fill" style="width: 90%;"></div>
+                </div>
+            </div>
+
+            <div class="skill-card reveal">
+                <span class="skill-tag" data-i18n="level_intermediate">Intermedio</span>
+                <span class="skill-icon"><svg width="42" height="42" viewBox="0 0 42 42" fill="none">
+                        <rect x="1" y="1" width="40" height="40" rx="8" fill="#3d5afe" stroke="#0a0a0a"
+                            stroke-width="2" /><text x="21" y="28" text-anchor="middle" font-family="sans-serif"
+                            font-weight="900" font-size="18" fill="#fff">AI</text>
+                        <circle cx="12" cy="12" r="3" fill="#ffe14d" />
+                        <line x1="15" y1="12" x2="27" y2="12" stroke="#ffe14d" stroke-width="1.5" />
+                        <circle cx="30" cy="12" r="3" fill="#ffe14d" />
+                    </svg></span>
+                <div class="skill-name">AI Tools</div>
+                <p class="skill-desc" data-i18n="desc_ai">Integración de herramientas de IA para generación de
+                    contenido, automatización y
+                    edición inteligente.</p>
+                <div class="skill-level">
+                    <div class="skill-level-fill" style="width: 60%;"></div>
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </section>
+
+    <!-- Reels -->
+    <section id="reels">
+        <div class="section-header reveal">
+            <span class="section-label" data-i18n="section_portfolio">Portafolio</span>
+            <h2 class="section-title" data-i18n="title_reels">Mis Reels ✦</h2>
+        </div>
+
+        <div class="reels-grid">
+            <div class="reel-card reveal">
+                <div class="reel-preview">
+                    <video width="100%" height="100%" controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <!-- REEMPLAZAR 'url_del_video.mp4' POR EL LINK DE TU VIDEO -->
+                        <source
+                            src="https://res.cloudinary.com/dqqqwkcbj/video/upload/v1770662055/Storm_season_-_Reel_4_1_rdrbh1.mov"
+                            type="video/mp4">
+                        Tu navegador no soporta video.
+                    </video>
+                </div>
+                <div class="reel-info">
+                    <div class="reel-title">AI Agency Ad</div>
+                    <div class="reel-meta">Ads · 25s · Home Services</div>
+                    <div class="reel-links">
+                        <a href="https://www.tiktok.com/@belenrodriguez" target="_blank" class="reel-link tiktok">TikTok
+                            ↗</a>
+                        <a href="https://www.instagram.com/belenrodriguez" target="_blank"
+                            class="reel-link instagram">IG ↗</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reel-card reveal">
+                <div class="reel-preview">
+                    <video width="100%" height="100%" controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <source src="https://res.cloudinary.com/dqqqwkcbj/video/upload/v1770662124/Storm_1_1_txuveo.mov"
+                            type="video/mp4">
+                        Tu navegador no soporta video.
+                    </video>
+                </div>
+                <div class="reel-info">
+                    <div class="reel-title">AI Agency Ad</div>
+                    <div class="reel-meta">Ads · 25s · Home Services</div>
+                    <div class="reel-links">
+                        <a href="https://www.tiktok.com/@belenrodriguez" target="_blank" class="reel-link tiktok">TikTok
+                            ↗</a>
+                        <a href="https://www.instagram.com/belenrodriguez" target="_blank"
+                            class="reel-link instagram">IG ↗</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reel-card reveal">
+                <div class="reel-preview">
+                    <video width="100%" height="100%" controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <source
+                            src="https://res.cloudinary.com/dqqqwkcbj/video/upload/v1770662153/reel_1_JULIO_ptlufs.mov"
+                            type="video/mp4">
+                        Tu navegador no soporta video.
+                    </video>
+                </div>
+                <div class="reel-info">
+                    <div class="reel-title">AI Agency Ad</div>
+                    <div class="reel-meta">Ads · 25s · Home Services</div>
+                    <div class="reel-links">
+                        <a href="https://www.tiktok.com/@belenrodriguez" target="_blank" class="reel-link tiktok">TikTok
+                            ↗</a>
+                        <a href="https://www.instagram.com/belenrodriguez" target="_blank"
+                            class="reel-link instagram">IG ↗</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reel-card reveal">
+                <div class="reel-preview">
+                    <video width="100%" height="100%" controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <source
+                            src="https://res.cloudinary.com/dqqqwkcbj/video/upload/v1770662171/receptionist_x9yfzw.mov"
+                            type="video/mp4">
+                        Tu navegador no soporta video.
+                    </video>
+                </div>
+                <div class="reel-info">
+                    <div class="reel-title">AI Agency Ad</div>
+                    <div class="reel-meta">Ads · 25s · Home Services</div>
+                    <div class="reel-links">
+                        <a href="https://www.tiktok.com/@belenrodriguez" target="_blank" class="reel-link tiktok">TikTok
+                            ↗</a>
+                        <a href="https://www.instagram.com/belenrodriguez" target="_blank"
+                            class="reel-link instagram">IG ↗</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reel-card reveal">
+                <div class="reel-preview">
+                    <video width="100%" height="100%" controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <source
+                            src="https://res.cloudinary.com/dqqqwkcbj/video/upload/v1770662247/Clipping_ETHAN_PRICE_f0ncez.mov"
+                            type="video/mp4">
+                        Tu navegador no soporta video.
+                    </video>
+                </div>
+                <div class="reel-info">
+                    <div class="reel-title">YouTuber Clipping</div>
+                    <div class="reel-meta">Reels · 45s · Content Repurposing</div>
+                    <div class="reel-links">
+                        <a href="https://www.tiktok.com/@belenrodriguez" target="_blank" class="reel-link tiktok">TikTok
+                            ↗</a>
+                        <a href="https://www.instagram.com/belenrodriguez" target="_blank"
+                            class="reel-link instagram">IG ↗</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+        <div class="section-header reveal">
+            <span class="section-label" data-i18n="section_about">Sobre Mí</span>
+            <h2 class="section-title">Belén 🦋<br>Rodríguez</h2>
+        </div>
+
+        <div class="about-content">
+            <div class="about-text reveal">
+                <p data-i18n="about_p1">
+                    Soy editora de video y trabajo con contenido para redes sociales, ayudando a comunicar ideas y
+                    mensajes de forma clara, dinámica y visualmente atractiva.
+                </p>
+                <p data-i18n="about_p2">
+                    Me enfoco en crear videos cortos que se entiendan rápido, mantengan un buen ritmo y transmitan
+                    profesionalismo sin verse rígidos. Busco que cada edición tenga intención: desde el primer segundo,
+                    el audio, los cortes y los subtítulos, hasta el estilo visual final.
+                </p>
+                <p data-i18n="about_p3">
+                    Trabajo principalmente con Reels, TikTok y YouTube Shorts, ordenando y puliendo el material para
+                    lograr videos claros, atractivos y con identidad propia.
+                </p>
+            </div>
+            <div class="about-stats reveal">
+                <div class="stat-box">
+                    <div class="stat-number">RRSS</div>
+                    <div class="stat-label" data-i18n="stat_specialist">Especialista</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" data-i18n="stat_vertical">Vertical</div>
+                    <div class="stat-label" data-i18n="stat_short_formats">Formatos Cortos</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" data-i18n="stat_rhythm">Ritmo</div>
+                    <div class="stat-label" data-i18n="stat_dynamic_editing">Edición Dinámica</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" data-i18n="stat_detail">Detalle</div>
+                    <div class="stat-label" data-i18n="stat_audio_color">Audio & Color</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+        <div class="section-header reveal">
+            <span class="section-label" data-i18n="section_contact">Contacto</span>
+        </div>
+        <div class="contact-cta reveal">
+            <span data-i18n="contact_cta_1">¿Listo para crear</span> <br><span class="accent"
+                data-i18n="contact_cta_2">algo increíble</span>? 🦋
+        </div>
+        <div class="social-links reveal">
+            <a href="https://www.tiktok.com/@belenrodriguez" target="_blank" class="social-link">TikTok ↗</a>
+            <a href="https://www.instagram.com/belenrodriguez" target="_blank" class="social-link">Instagram ↗</a>
+            <a href="mailto:belen@ejemplo.com" class="social-link">Email ↗</a>
+        </div>
+        <p class="footer-text">© 2026 Belén Rodríguez — <span data-i18n="rights_reserved">Todos los derechos
+                reservados</span></p>
+    </section>
+
+    <script>
+        // Language Data
+        const translations = {
+            es: {
+                nav_about: "Sobre Mí",
+                nav_contact: "Contacto",
+                hero_desc: "Editora de video especializada en reels, contenido viral y motion graphics. Transformo ideas en piezas visuales que capturan la atención y generan impacto. ✦",
+                btn_reels: "→ Ver Reels",
+                btn_contact: "Contacto",
+                section_tools: "Herramientas",
+                level_advanced: "Avanzado",
+                level_intermediate: "Intermedio",
+                level_basic: "Básico",
+                desc_canva: "Diseño de thumbnails, stories, y plantillas para redes sociales con branding consistente.",
+                desc_capcut: "Edición avanzada de reels y TikToks con transiciones, efectos y sincronización musical.",
+                desc_ai: "Integración de herramientas de IA para generación de contenido, automatización y edición inteligente.",
+                desc_ae: "Motion graphics, composición visual, animaciones avanzadas y efectos especiales para video.",
+                section_portfolio: "Portafolio",
+                title_reels: "Mis Reels ✦",
+                section_about: "Sobre Mí",
+                about_p1: "Soy editora de video y trabajo con contenido para redes sociales, ayudando a comunicar ideas y mensajes de forma clara, dinámica y visualmente atractiva.",
+                about_p2: "Me enfoco en crear videos cortos que se entiendan rápido, mantengan un buen ritmo y transmitan profesionalismo sin verse rígidos. Busco que cada edición tenga intención: desde el primer segundo, el audio, los cortes y los subtítulos, hasta el estilo visual final.",
+                about_p3: "Trabajo principalmente con Reels, TikTok y YouTube Shorts, ordenando y puliendo el material para lograr videos claros, atractivos y con identidad propia.",
+                stat_specialist: "Especialista",
+                stat_vertical: "Vertical",
+                stat_short_formats: "Formatos Cortos",
+                stat_rhythm: "Ritmo",
+                stat_dynamic_editing: "Edición Dinámica",
+                stat_detail: "Detalle",
+                stat_audio_color: "Audio & Color",
+                section_contact: "Contacto",
+                contact_cta_1: "¿Listo para crear",
+                contact_cta_2: "algo increíble",
+                rights_reserved: "Todos los derechos reservados"
+            },
+            en: {
+                nav_about: "About Me",
+                nav_contact: "Contact",
+                hero_desc: "Video editor specialized in reels, viral content, and motion graphics. I transform ideas into visual pieces that capture attention and generate impact. ✦",
+                btn_reels: "→ Watch Reels",
+                btn_contact: "Contact",
+                section_tools: "Tools",
+                level_advanced: "Advanced",
+                level_intermediate: "Intermediate",
+                level_basic: "Basic",
+                desc_canva: "Design of thumbnails, stories, and templates for social media with consistent branding.",
+                desc_capcut: "Advanced editing of reels and TikToks with transitions, effects, and musical synchronization.",
+                desc_ai: "Integration of AI tools for content generation, automation, and intelligent editing.",
+                desc_ae: "Motion graphics, visual composition, advanced animations, and special effects for video.",
+                section_portfolio: "Portfolio",
+                title_reels: "My Reels ✦",
+                section_about: "About Me",
+                about_p1: "I am a video editor working with social media content, helping to communicate ideas and messages in a clear, dynamic, and visually attractive way.",
+                about_p2: "I focus on creating short videos that are understood quickly, maintain a good rhythm, and convey professionalism without looking rigid. I ensure every edit has intention: from the first second, audio, cuts, and subtitles, to the final visual style.",
+                about_p3: "I work mainly with Reels, TikTok, and YouTube Shorts, organizing and polishing material to achieve clear, attractive videos with their own identity.",
+                stat_specialist: "Specialist",
+                stat_vertical: "Vertical",
+                stat_short_formats: "Short Formats",
+                stat_rhythm: "Rhythm",
+                stat_dynamic_editing: "Dynamic Editing",
+                stat_detail: "Detail",
+                stat_audio_color: "Audio & Color",
+                section_contact: "Contact",
+                contact_cta_1: "Ready to create",
+                contact_cta_2: "something amazing",
+                rights_reserved: "All rights reserved"
+            }
+        };
+
+        let currentLang = 'es';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            updateContent();
+            updateLangButton();
+        }
+
+        function updateContent() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    element.textContent = translations[currentLang][key];
+                }
+            });
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLang;
+        }
+
+        function updateLangButton() {
+            // SVGs for flags
+            const usFlag = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55h640M0 129h640M0 203h640M0 277h640M0 351h640M0 425h640"/><path fill="#192f5d" d="M0 0h320v259H0z"/><marker id="us-a" markerHeight="30" markerWidth="30"><path fill="#fff" d="m15 0 9 30-24-18h30L6 30z"/></marker><use href="#us-a" x="32" y="32"/></svg>`;
+            const esFlag = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480"><path fill="#aa151b" d="M0 0h640v480H0z"/><path fill="#f1bf00" d="M0 120h640v240H0z"/></svg>`;
+
+            const flagSvg = currentLang === 'es' ? usFlag : esFlag;
+            const text = currentLang === 'es' ? 'EN' : 'ES';
+
+            document.getElementById('langFlag').innerHTML = flagSvg;
+            document.getElementById('langText').textContent = text;
+
+            // Also update mobile/duplicate button if it exists
+            const mobileFlag = document.getElementById('mobileLangFlag');
+            const mobileText = document.getElementById('mobileLangText');
+            if (mobileFlag) mobileFlag.innerHTML = flagSvg;
+            if (mobileText) mobileText.textContent = text;
+        }
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+
+        // Scroll reveal
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 80);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // Cursor trail
+        const cursorDot = document.getElementById('cursorDot');
+        let mouseX = 0, mouseY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            cursorDot.style.left = mouseX - 5 + 'px';
+            cursorDot.style.top = mouseY - 5 + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Hide cursor dot on mobile
+        if ('ontouchstart' in window) {
+            cursorDot.style.display = 'none';
+        }
+
+        // Parallax butterflies on scroll
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            document.querySelectorAll('.butterfly').forEach((b, i) => {
+                const speed = 0.02 + (i * 0.008);
+                b.style.transform = `translateY(${scrollY * speed}px)`;
+            });
+        });
+    </script>
+</body>
+
+</html>
