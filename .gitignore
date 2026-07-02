@@ -1,0 +1,12 @@
+# Videos locales (ya viven en Cloudinary, no hace falta subirlos)
+ecommerce-camisetas*.mov
+ecommerce-camisetas*.mp4
+video portfolio*.mov
+video portfolio*.mp4
+video protfolio*.mp4
+
+# Paginas de comparacion de tipografias (no van al sitio publicado)
+firmas*.html
+
+# Logo de CapCut viejo (se usa capcut-logo2.webp)
+capcut-logo.webp
